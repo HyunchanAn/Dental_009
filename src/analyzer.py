@@ -15,7 +15,7 @@ class ImpactedToothAnalyzer:
         """
         치아 폴리곤(Contour)으로부터 주축(Long Axis) 벡터와 중심점을 계산합니다.
         """
-        if len(contour) < 5:
+        if len(contour) < 3:
             return None, None
         
         pts = contour.reshape(-1, 2).astype(np.float64)

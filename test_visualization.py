@@ -10,7 +10,7 @@ def create_dummy_contour(center_x, center_y, width, height, angle_deg):
     """지정된 중심, 너비, 높이, 회전각도를 가진 가상의 직사각형 폴리곤(치아 대체) 생성"""
     rect = ((center_x, center_y), (width, height), angle_deg)
     box = cv2.boxPoints(rect)
-    return np.int0(box)
+    return np.int32(box)
 
 def test_winters_classification_visualization():
     analyzer = ImpactedToothAnalyzer()
