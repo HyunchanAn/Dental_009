@@ -1,3 +1,5 @@
+![Status](https://img.shields.io/badge/Status-v1.0%20Release-brightgreen) ![Python](https://img.shields.io/badge/Python-3.12%2B-blue) ![Backend](https://img.shields.io/badge/Backend-YOLOv8-red) ![UI](https://img.shields.io/badge/UI-Streamlit-orange) ![CI/CD Pipeline](https://img.shields.io/badge/CI%2FCD%20Pipeline-passing-brightgreen?logo=github)
+
 # Dental_009 (Impacted Tooth Detailed Analysis)
 
 이 모듈은 파노라마 X-ray에서 식별된 매복치(Impacted Tooth, 주로 제3대구치)의 발치 난이도 및 기하학적 형태를 상세 분석하는 후처리 모듈입니다.
@@ -15,3 +17,14 @@
 ## Limitations
 - 치아의 장축은 PCA(주성분 분석)를 통해 추정하므로, 치근이 심하게 휘어있거나(Dilaceration) 폴리곤의 형태가 비정상적인 경우 각도 오차가 발생할 수 있습니다.
 - 하악관(Mandibular canal)과의 겹침이나 3차원적인 뿌리 갯수는 파노라마 2D 한계상 정확하게 측정할 수 없습니다.
+
+## 학습 환경 (Training Environment)
+> **[학습 환경 사양]** 실질적 모델 학습은 **RTX 5080 + 라이젠9-6 9900x** 환경에서 진행되었습니다.
+
+## 개요
+이 레포지토리는 치과 AI 모듈러 시스템의 일부입니다.
+
+## 설치 및 실행 방법
+```bash
+pip install -r requirements.txt
+```
