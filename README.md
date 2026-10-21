@@ -1,37 +1,54 @@
-![Status](https://img.shields.io/badge/Status-v1.0%20Release-brightgreen) ![Python](https://img.shields.io/badge/Python-3.12%2B-blue) ![Backend](https://img.shields.io/badge/Backend-YOLOv8-red) ![UI](https://img.shields.io/badge/UI-Streamlit-orange) ![CI/CD Pipeline](https://img.shields.io/badge/CI%2FCD%20Pipeline-passing-brightgreen?logo=github)
-
 # Dental_009 (Impacted Tooth Detailed Analysis)
 
-이 모듈은 파노라마 X-ray에서 식별된 매복치(Impacted Tooth, 주로 제3대구치)의 발치 난이도 및 기하학적 형태를 상세 분석하는 후처리 모듈입니다.
+![Status](https://img.shields.io/badge/Status-Rule--Based%20Heuristic-yellowgreen) ![Python](https://img.shields.io/badge/Python-3.12%2B-blue) ![Backend](https://img.shields.io/badge/Backend-OpenCV%20PCA%20Geometry-blue) ![License](https://img.shields.io/badge/License-MIT-green) ![CI/CD Pipeline](https://img.shields.io/badge/CI%2FCD%20Pipeline-passing-brightgreen?logo=github)
 
-## 기능 (Features)
-- **Winter's Classification 판별**: 인접 제2대구치의 장축(Long axis)을 기준으로 매복치의 경사도를 수치화하여 4가지 클래스(Mesioangular, Distoangular, Vertical, Horizontal) 중 하나로 판별합니다.
-- **맹출 상태(Eruption Status) 평가**: 제2대구치의 교합면 및 치경부 높이를 기준으로 매복치의 최고점 높이를 비교하여 완전맹출, 부분맹출, 완전매복으로 분류합니다.
+이 모듈은 파노라마 방사선 영상에서 선행 치아 분할 모듈(`Dental_008`)이 식별한 제3대구치(사랑니, FDI `#18, #28, #38, #48`)와 인접 제2대구치(`#17, #27, #37, #47`)의 폴리곤 마스크 좌표를 입력받아, 기하학적 장축 각도(Winter's Classification) 및 맹출 깊이(Pell & Gregory Level A/B/C 프록시)를 규칙 기반으로 산출하는 후처리 모듈입니다.
+
+## 기능 및 알고리즘 명세 (Algorithm Specification)
+
+1. [PCA 주성분 장축 추정 (`get_long_axis_vector`)]:
+   - OpenCV `cv2.PCACompute`를 사용하여 제3대구치 및 인접 제2대구치 컨투어의 제1주성분(Long Axis) 단위 벡터를 추출합니다.
+2. [Winter's Classification 각도 분류 (`evaluate_winters_classification`)]:
+   - 제2대구치 장축 벡터 대비 제3대구치 장축 벡터의 사잇각($\theta$)을 계산하여 분류합니다 (참고 문헌: Winter, 1926; Quek et al., Int J Oral Maxillofac Surg 2003):
+     - `Vertical`: $|\theta| \le 10^\circ$
+     - `Mesioangular` / `Distoangular`: $10^\circ < |\theta| \le 75^\circ$ (악궁 사분면 Q1~Q4 방향에 따른 부호 판별)
+     - `Horizontal`: $75^\circ < |\theta| \le 105^\circ$
+     - `Distoangular/Inverted`: $|\theta| > 105^\circ$
+3. [맹출 상태 및 Pell & Gregory 깊이 분류 (`evaluate_eruption_status`, `evaluate_pell_gregory_level`)]:
+   - 인접 제2대구치의 교합면(Occlusal plane)과 치경부 중간선(Cervical midpoint)을 기준으로 제3대구치 최고점의 수직 위치를 비교하여 `Fully Erupted` (`Level A`), `Partially Erupted` (`Level B`), `Fully Impacted` (`Level C`)로 분류합니다.
+   - [탐색적 엔지니어링 휴리스틱 고지 (88% Height-Ratio Heuristic)]: `target_h < adj_h * 0.88` 조건은 2D 파노라마 투영에서 협설측 경사나 부분 맹출로 인해 치관-치근 수직 바운딩 박스 길이가 짧아지는 현상을 보완하기 위한 탐색적 엔지니어링 휴리스틱(Exploratory Engineering Heuristic)이며, 단독 임상 확진 기준이 아닙니다.
+
+## 벤치마크 및 검증 결과 (Benchmark & Validation)
+
+- [10-Case 정량 벤치마크 (`10_cases_quantitative_benchmark.json`)]:
+  - 복합 파노라마 골드 어노테이션(`panoramic-x-ray-thegem-blog-default.jpg`) 내 4개 사랑니 매복(`#18, #28, #38, #48`) 구간 평가 결과 (`IoU >= 0.25` 매칭 기준):
+    - `#18`: `IoU = 0.288`, FDI 일치 (`TP`)
+    - `#28`: `IoU = 0.583`, FDI 일치 (`TP`)
+    - `#38`: `IoU = 0.577`, FDI 일치 (`TP`)
+    - `#48`: `IoU = 0.624`, FDI 일치 (`TP`)
+  - 매복 제3대구치 4/4건 검출 (`Recall = 100.0%`, `Precision = 100.0%`, `FDI_Match = 100.0%`).
+- [단위 테스트 (`tests/test_analyzer.py`)]:
+  - 사분면별 Winter 각도 분류(`Vertical`, `Mesioangular`, `Distoangular`, `Horizontal`, `Distoangular/Inverted`), Pell & Gregory 깊이(`Level A/B/C`), 88% 높이비 휴리스틱, TheGem 4개 사랑니 골드 케이스 정합성을 검증합니다.
 
 ## 입력 데이터 구조
-- 본 모듈은 원본 이미지가 아닌, 선행 AI 모델들의 결과값을 기하학적으로 처리하는 룰 기반 모듈입니다.
-- **필수 입력값**:
-  - 매복치의 픽셀 폴리곤 마스크 좌표 (008 모듈 등에서 획득)
-  - 인접치(제2대구치)의 픽셀 폴리곤 마스크 좌표 (008 모듈 등에서 획득)
-  
-## Limitations
-- 치아의 장축은 PCA(주성분 분석)를 통해 추정하므로, 치근이 심하게 휘어있거나(Dilaceration) 폴리곤의 형태가 비정상적인 경우 각도 오차가 발생할 수 있습니다.
-- 하악관(Mandibular canal)과의 겹침이나 3차원적인 뿌리 갯수는 파노라마 2D 한계상 정확하게 측정할 수 없습니다.
+- 본 모듈은 원본 이미지가 아닌, 선행 AI 모델(`Dental_008`)의 세그멘테이션 폴리곤 좌표를 기하학적으로 처리하는 규칙 기반 모듈입니다.
+- 필수 입력값:
+  - 제3대구치(`#18, #28, #38, #48`) 픽셀 폴리곤 마스크 좌표
+  - 인접 제2대구치(`#17, #27, #37, #47`) 픽셀 폴리곤 마스크 좌표
 
-## 학습 환경 (Training Environment)
-> **[학습 환경 사양]** 실질적 모델 학습은 **RTX 5080 + 라이젠9-6 9900x** 환경에서 진행되었습니다.
-
-## 개요
-이 레포지토리는 치과 AI 모듈러 시스템의 일부입니다.
+## 한계점 (Limitations)
+- 치아의 장축을 2D 컨투어의 PCA(주성분 분석)로 추정하므로, 치근 만곡(Dilaceration)이 심하거나 치관-치근 비례가 정방형에 가까운 경우 주축 각도 오차가 발생할 수 있습니다.
+- 하악관(Mandibular canal)과의 3차원적 접촉 여부 및 치근 개수는 2D 파노라마 한계상 CBCT 없이 확정할 수 없습니다.
 
 ## 설치 및 실행 방법
 ```bash
 pip install -r requirements.txt
+pytest tests/test_analyzer.py -v
+python scripts/run_visualization_demo.py
 ```
 
-
 ## 가중치 파일 안내
-본 모듈은 가중치 모델이 불필요한 룰베이스/인프라/기하학 모듈이므로, 별도의 딥러닝 가중치 파일이 요구되지 않습니다.
+본 모듈은 가중치 모델이 불필요한 룰베이스/기하학 모듈이므로, 별도의 딥러닝 가중치 파일이 요구되지 않습니다.
 
 ## 연구용 실행 주의사항
 - 기본 실행 주소: 127.0.0.1 (로컬 전용)
