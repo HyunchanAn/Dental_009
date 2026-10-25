@@ -1,0 +1,29 @@
+2026-07-13
+- 제3대구치(사랑니) 매복치 기하학적 형태 분석 모듈(`Dental_009`) 초기 커밋 및 PCA 장축 기반 Winter's Classification / Pell & Gregory 분류기(`src/analyzer.py`) 구현 완료.
+
+2026-07-14
+- `Dental_008` 세그멘테이션 마스크 연동 인터페이스 및 `README.md` 문서 정비 완료.
+
+2026-07-19
+- ONNX 런타임 호환성 패치, `.gitignore` 보강 및 글로벌 CI/CD 경로 설정 완료.
+
+2026-07-21
+- 중앙 재사용 CI 워크플로우(`reusable-ci.yml`) 마이그레이션 및 Dockerfile 테스트 경로 수정 완료.
+
+2026-08-17
+- 연구 보안 및 저장소 위생 베이스라인 적용 완료.
+
+2026-09-28
+- `Dental_Core` 의존성 브랜치(`@main`) 정렬 완료.
+
+2026-10-13
+- 상·하악 사분면별 맹출 상태(Eruption Status) 판정 방향성 보정 및 88% 치관 높이 비율 휴리스틱 업데이트 완료.
+
+2026-10-20
+- MIT `LICENSE` 파일 추가 및 데이터셋·라이선스 고지(`Dental_000#7`) 반영 완료.
+
+2026-10-21
+- 이슈 #1 해결: 루트 데모 스크립트(`test_visualization.py`)를 `scripts/run_visualization_demo.py`로 이동하여 pytest 오수집 차단, 불필요한 `export_onnx.py` 및 `__pycache__` 제거, Winter/Pell-Gregory 기하학 검증 단위 테스트(`tests/test_analyzer.py`) 신설 및 `README.md` 10례 벤치마크 명세 완료.
+
+2026-10-25
+- 전 시리즈 표준 양식(`YYYY-MM-DD` 헤더 및 하이픈 불릿)에 맞춘 루트 `development_log.txt` 구축 및 정돈 완료.
