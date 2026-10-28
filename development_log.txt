@@ -27,3 +27,6 @@
 
 2026-10-25
 - 전 시리즈 표준 양식(`YYYY-MM-DD` 헤더 및 하이픈 불릿)에 맞춘 루트 `development_log.txt` 구축 및 정돈 완료.
+
+2026-10-28
+- 이슈 #2 해결: `Dental_000/tests/tests_009_010/test_integrated_pipeline.py` 내 `ultralytics` 최상위 임포트 의존성을 분리하여 `pytest` 미수집(Exit Code 5) 결함을 해소하고, `.github/workflows/ci.yml`에서 자체 단위 테스트(`tests/`)와 중앙 통합 테스트를 함께 실행하도록 정비하여 원격 CI 복구 완료.
