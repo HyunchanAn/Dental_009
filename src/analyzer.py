@@ -62,7 +62,10 @@ class ImpactedToothAnalyzer:
         if abs_angle <= 10:
             return "Vertical"
         elif 10 < abs_angle <= 75:
-            if (quadrant in [3, 4] and angle > 0) or (quadrant in [1, 2] and angle < 0):
+            # Since PCA axis is normalized to y <= 0:
+            # - Mandible (Q3/Q4): axis points root -> crown. Q4 mesial (+x) => angle > 0; Q3 mesial (-x) => angle < 0.
+            # - Maxilla (Q1/Q2): axis points crown -> root. Q1 mesial (+x crown, -x root) => angle < 0; Q2 mesial (-x crown, +x root) => angle > 0.
+            if (quadrant in [2, 4] and angle > 0) or (quadrant in [1, 3] and angle < 0):
                 return "Mesioangular"
             else:
                 return "Distoangular"
@@ -74,20 +77,17 @@ class ImpactedToothAnalyzer:
     def evaluate_eruption_status(self, target_contour, adjacent_contour, quadrant=3):
         """
         Evaluates vertical eruption depth (Pell & Gregory Level A/B/C proxy):
-        - Fully Erupted (Level A): occlusal plane within 10 px of adjacent 2nd molar
+        - Fully Erupted (Level A): occlusal plane within 0.10 * adj_h of adjacent 2nd molar
         - Partially Erupted (Level B): occlusal point between occlusal plane and cervical line,
           or exploratory bounding-box height ratio heuristic (target_h < 0.88 * adj_h)
         - Fully Impacted (Level C): occlusal point apical to the adjacent cervical midpoint
-
-        Note: The 88% height ratio (target_h < adj_h * 0.88) is an exploratory engineering
-        heuristic to catch partially erupted or foreshortened third-molar masks in 2D
-        panoramic projections, not a standalone clinical standard.
         """
         target_pts = np.asarray(target_contour).reshape(-1, 2)
         adj_pts = np.asarray(adjacent_contour).reshape(-1, 2)
 
         target_h = float(np.max(target_pts[:, 1]) - np.min(target_pts[:, 1]))
         adj_h = float(np.max(adj_pts[:, 1]) - np.min(adj_pts[:, 1]))
+        occlusal_tol = 0.10 * adj_h if adj_h > 0 else 0.0
 
         if quadrant in [1, 2]:  # Maxilla: occlusal surface has larger y (inferior)
             target_occlusal_y = float(np.max(target_pts[:, 1]))
@@ -97,9 +97,9 @@ class ImpactedToothAnalyzer:
 
             if target_occlusal_y < adj_cervical_y:
                 return "Fully Impacted"
-            if adj_h > 20 and target_h < adj_h * 0.88:
+            if adj_h > 0 and target_h < adj_h * 0.88:
                 return "Partially Erupted"
-            if target_occlusal_y >= adj_occlusal_y - 10:
+            if target_occlusal_y >= adj_occlusal_y - occlusal_tol:
                 return "Fully Erupted"
             return "Partially Erupted"
         else:  # Mandible: occlusal surface has smaller y (superior)
@@ -110,9 +110,9 @@ class ImpactedToothAnalyzer:
 
             if target_occlusal_y > adj_cervical_y:
                 return "Fully Impacted"
-            if adj_h > 20 and target_h < adj_h * 0.88:
+            if adj_h > 0 and target_h < adj_h * 0.88:
                 return "Partially Erupted"
-            if target_occlusal_y <= adj_occlusal_y + 10:
+            if target_occlusal_y <= adj_occlusal_y + occlusal_tol:
                 return "Fully Erupted"
             return "Partially Erupted"
 

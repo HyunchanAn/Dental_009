@@ -1,4 +1,4 @@
-![Status](https://img.shields.io/badge/Status-Rule--Based%20Heuristic-yellowgreen "Status") ![Python](https://img.shields.io/badge/Python-3.12%2B-blue "Python") ![Backend](https://img.shields.io/badge/Backend-OpenCV%20PCA%20Geometry-blue "Backend") ![License](https://img.shields.io/badge/License-MIT-green "License") ![CI/CD Pipeline](https://img.shields.io/badge/CI%2FCD%20Pipeline-passing-brightgreen?logo=github "CI/CD Pipeline")
+![Status](https://img.shields.io/badge/Status-Rule--Based%20Heuristic-yellowgreen "Status") ![Python](https://img.shields.io/badge/Python-3.10%2B-blue "Python") ![Backend](https://img.shields.io/badge/Backend-OpenCV%20PCA%20Geometry-blue "Backend") ![License](https://img.shields.io/badge/License-MIT-green "License") ![CI/CD Pipeline](https://img.shields.io/badge/CI%2FCD%20Pipeline-passing-brightgreen?logo=github "CI/CD Pipeline")
 
 # Dental_009: Impacted Tooth Detailed Analysis (매복 제3대구치 기하학적 난이도 분석)
 

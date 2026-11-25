@@ -34,12 +34,29 @@ def test_winters_angular_categories():
     analyzer = ImpactionAnalyzer()
     assert analyzer.evaluate_winters_classification(0.0, quadrant=3) == "Vertical"
     assert analyzer.evaluate_winters_classification(8.5, quadrant=4) == "Vertical"
-    assert analyzer.evaluate_winters_classification(35.0, quadrant=3) == "Mesioangular"
-    assert analyzer.evaluate_winters_classification(-35.0, quadrant=3) == "Distoangular"
+    # Left/right symmetric sign convention (PCA axis normalized to y <= 0):
+    # Q1 (#18) & Q3 (#38): angle < 0 => Mesioangular; Q2 (#28) & Q4 (#48): angle > 0 => Mesioangular
     assert analyzer.evaluate_winters_classification(-35.0, quadrant=1) == "Mesioangular"
-    assert analyzer.evaluate_winters_classification(35.0, quadrant=2) == "Distoangular"
+    assert analyzer.evaluate_winters_classification(35.0, quadrant=1) == "Distoangular"
+    assert analyzer.evaluate_winters_classification(35.0, quadrant=2) == "Mesioangular"
+    assert analyzer.evaluate_winters_classification(-35.0, quadrant=2) == "Distoangular"
+    assert analyzer.evaluate_winters_classification(-35.0, quadrant=3) == "Mesioangular"
+    assert analyzer.evaluate_winters_classification(35.0, quadrant=3) == "Distoangular"
+    assert analyzer.evaluate_winters_classification(35.0, quadrant=4) == "Mesioangular"
+    assert analyzer.evaluate_winters_classification(-35.0, quadrant=4) == "Distoangular"
     assert analyzer.evaluate_winters_classification(88.0, quadrant=3) == "Horizontal"
     assert analyzer.evaluate_winters_classification(120.0, quadrant=4) == "Distoangular/Inverted"
+
+
+def test_resolution_invariant_eruption_depth():
+    analyzer = ImpactedToothAnalyzer()
+    # Scale 1x vs 4x must yield identical Pell & Gregory level
+    adj_1x = bbox_to_contour([200, 300, 240, 400])       # height 100, tol = 10
+    tgt_1x = bbox_to_contour([250, 308, 290, 408])       # delta 8 <= 10 => Level A
+    adj_4x = bbox_to_contour([800, 1200, 960, 1600])     # height 400, tol = 40
+    tgt_4x = bbox_to_contour([1000, 1232, 1160, 1632])   # delta 32 <= 40 => Level A
+    assert analyzer.evaluate_eruption_status(tgt_1x, adj_1x, quadrant=3) == "Fully Erupted"
+    assert analyzer.evaluate_eruption_status(tgt_4x, adj_4x, quadrant=3) == "Fully Erupted"
 
 
 def test_pell_gregory_depth_levels_and_88_percent_heuristic():
